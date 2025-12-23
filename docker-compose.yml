@@ -1,0 +1,73 @@
+x-default-system-settings: &default-settings
+  networks:
+    - em_app_network
+  restart: on-failure
+
+services:
+  pgdb:
+    <<: *default-settings
+    container_name: pgdb_em_app
+    image: postgres:18.1-bookworm
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/pg_password
+    secrets:
+      - pg_password
+    volumes:
+      - pgdb:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "25432:5432"
+
+  redis:
+    <<: *default-settings
+    image: redis:8.4-bookworm
+    container_name: em_app_redis
+    hostname: em_app_redis
+    restart: unless-stopped
+    secrets:
+      - redis_password
+      - redis_admin_password
+      - redis_health_password
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./redis/users.acl.tpl:/usr/local/etc/redis/users.acl.tpl:ro
+      - ./redis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - ./redis/healthcheck.sh:/usr/local/bin/healthcheck.sh:ro
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    ports:
+      - "26379:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "/usr/local/bin/healthcheck.sh" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  pgdb:
+    name: em_app_db_data
+  redis-data:
+    name: em_app_redis_data
+
+networks:
+  em_app_network:
+    name: em_app_network
+    driver: bridge
+
+secrets:
+  pg_password:
+    file: ./secrets/pg_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  redis_admin_password:
+    file: ./secrets/redis_admin_password.txt
+  redis_health_password:
+    file: ./secrets/redis_health_password.txt
