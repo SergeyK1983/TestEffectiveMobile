@@ -1,0 +1,7 @@
+.idea
+/secret_key
+/secrets
+/logs
+**/__pycache__/
+.env
+requirements.txt
