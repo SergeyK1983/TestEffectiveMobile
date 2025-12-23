@@ -1,4 +1,4 @@
-from src.app_account.models.custom_user import CustomUser
+from src.auth_app.models.custom_user import CustomUser
 
 
 __all__ = [
