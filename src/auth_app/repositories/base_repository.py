@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import select, String, Select, or_, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -96,4 +94,3 @@ class UserBaseRepo:
             raise ValueError("Нужен хотя бы один аргумент: username: str или email: str")
 
         return result
-
