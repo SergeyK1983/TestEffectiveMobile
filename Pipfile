@@ -20,6 +20,7 @@ pydantic-settings = "*"
 loguru = "*"
 aiohttp = ">=3.13"
 redis = "==7.1.0"
+typer = "*"
 
 [dev-packages]
 pytest = "*"
