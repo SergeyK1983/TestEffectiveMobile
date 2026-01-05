@@ -49,3 +49,10 @@ class UserWorkSchema(BaseModel):
 
 class UsersAllSchema(BaseModel):
     users: Annotated[list[UserWorkSchema], Field(default_factory=list, description="Пользователи")]
+
+
+class UserServiceFieldsSchema(BaseModel):
+    username: Annotated[str, Field(exclude=True, description="Пользователь")]
+    is_active: Annotated[bool | None, Field(default=None, description="Активированный пользователь")]
+    is_staff: Annotated[bool | None, Field(default=None, description="Сотрудник")]
+    is_superuser: Annotated[bool | None, Field(default=None, description="Администратор")]
