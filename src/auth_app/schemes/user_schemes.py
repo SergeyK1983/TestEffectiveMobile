@@ -46,3 +46,6 @@ class UserWorkSchema(BaseModel):
     is_staff: Annotated[bool | None, Field(default=None, description="Сотрудник")]
     is_superuser: Annotated[bool | None, Field(default=None, description="Администратор")]
 
+
+class UsersAllSchema(BaseModel):
+    users: Annotated[list[UserWorkSchema], Field(default_factory=list, description="Пользователи")]

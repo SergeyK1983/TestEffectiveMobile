@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from fastapi import Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,7 +8,7 @@ from src.auth_app.services.user import CurrentUser
 from src.auth_app.repositories import UserRegisteredRepo
 from src.auth_app.schemes.user_schemes import UserWorkSchema
 from src.auth_app.services.token import app_token, TypeToken
-from src.auth_app.exceptions import UserHTTPException
+from src.auth_app.exceptions import UserHTTPException, AuthHTTPException
 
 
 class Authentication:
@@ -59,3 +61,13 @@ async def refresh_tokens(
     """ Предназначено для обновления токенов. В заголовке использовать имя 'RefreshToken' """
 
     return await Authentication(request, header, db).is_authenticate()
+
+
+async def available_admin(request: Request) -> NoReturn:
+    """ Устанавливает доступ только для администратора """
+
+    user: CurrentUser = request.state.user
+    if not isinstance(user, CurrentUser) or not user.current_user.is_superuser:
+        AuthHTTPException.raise_http_403()
+
+    return

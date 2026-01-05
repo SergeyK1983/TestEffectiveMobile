@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import String, RowMapping
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
@@ -51,3 +53,10 @@ class SuperuserRepo(UserBaseRepo):
 
         logger.success("Администратор {name} создан, email {email}", name=username, email=email)
         return True
+
+    @classmethod
+    async def select_users(cls, db: AsyncSession) -> Sequence[RowMapping]:
+        query = cls._select_user_fields()
+        result = await cls._select_execute_query(query=query, db=db)
+        data = result.mappings().all()
+        return data
