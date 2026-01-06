@@ -1,0 +1,100 @@
+from typing import Sequence
+
+from sqlalchemy import String, RowMapping, update
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.auth_app.models import CustomUser
+from src.auth_app.repositories.base_repository import UserBaseRepo
+from src.core.logger import logger
+
+
+class SuperuserRepo(UserBaseRepo):
+
+    @classmethod
+    async def create_superuser(cls, username: str, email: str, password: str, db: AsyncSession) -> bool:
+        """
+        Создание суперпользователя
+        Args:
+            username: username
+            email: email
+            password: password
+            db: session
+        Returns:
+            True if created, else False
+        """
+        query = (
+            insert(
+                CustomUser
+            ).
+            values(
+                username=username,
+                password=password,
+                email=email,
+                is_superuser=True,
+                is_staff=True,
+                is_active=True,
+            )
+        )
+        try:
+            await db.execute(query)
+            await db.commit()
+
+            result = await db.execute(
+                cls._select_user_fields().where(CustomUser.username.cast(String) == username)
+            )
+            user_created: RowMapping = result.mappings().first()
+        except IntegrityError as exp:
+            logger.error("Ошибка записи в БД при создании суперпользователя: {err}", err=exp)
+            return False
+        if user_created is None:
+            return False
+
+        logger.success("Администратор {name} создан, email {email}", name=username, email=email)
+        return True
+
+    @classmethod
+    async def select_users(cls, db: AsyncSession) -> Sequence[RowMapping]:
+        query = cls._select_user_fields()
+        result = await cls._select_execute_query(query=query, db=db)
+        data = result.mappings().all()
+        return data
+
+    @classmethod
+    async def update_user_by_admin(cls, username: str, data: dict, db: AsyncSession) -> RowMapping | None:
+        """
+        Изменение данных записи о пользователе администратором. Изменение полей is_active, is_superuser, is_staff.
+        Args:
+            username: username of user
+            data: fields to update
+            db: Session from get_db()
+
+        Returns: RowMapping user data
+        """
+        query = (
+            update(
+                CustomUser
+            ).
+            where(
+                CustomUser.username.cast(String) == username
+            ).
+            returning(
+                CustomUser.id,
+                CustomUser.username,
+                CustomUser.is_active,
+                CustomUser.is_staff,
+                CustomUser.is_superuser
+            )
+        )
+
+        try:
+            result = await db.execute(query, data)
+            await db.commit()
+        except IntegrityError as exp:
+            logger.error("Ошибка изменения данных пользователя из БД {}", exp)
+            return
+
+        user_map: RowMapping = result.mappings().first()
+        logger.success("Данные пользователя username - {} изменены администратором", username)
+        return user_map

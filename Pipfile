@@ -4,22 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = ">=0.125"
-uvicorn = ">=0.38.0"
-sqlalchemy = ">=2.0.45"
+aiohttp = ">=3.13"
 alembic = ">=1.17.2"
-psycopg2-binary = ">=2.9.11"
+argon2-cffi = "*"
 asyncpg = ">=0.31.0"
-python-dotenv = "*"
 black = "*"
 email-validator = "*"
-passlib = {extras = ["bcrypt"], version = "*"}
-argon2-cffi = "*"
-pyjwt = {extras = ["crypto"], version = "*"}
-pydantic-settings = "*"
+fastapi = ">=0.125"
 loguru = "*"
-aiohttp = ">=3.13"
+passlib = {extras = ["bcrypt"], version = "*"}
+psycopg2-binary = ">=2.9.11"
+pydantic-settings = "*"
+pyjwt = {extras = ["crypto"], version = "*"}
+python-dotenv = "*"
 redis = "==7.1.0"
+rich = "*"
+sqlalchemy = ">=2.0.45"
+typer = "*"
+uvicorn = ">=0.38.0"
 
 [dev-packages]
 pytest = "*"
