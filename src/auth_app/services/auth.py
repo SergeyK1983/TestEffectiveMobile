@@ -4,6 +4,7 @@ from fastapi import Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_async_db
+from src.core.redis.redis import redis_user_ctx
 from src.auth_app.services.user import CurrentUser
 from src.auth_app.repositories import UserRegisteredRepo
 from src.auth_app.schemes.user_schemes import UserWorkSchema
@@ -52,7 +53,9 @@ async def authenticate(
     Returns:
         True if token is valid else raises exception
     """
-    return await Authentication(request, header, db).is_authenticate()
+    auth: bool = await Authentication(request, header, db).is_authenticate()
+    redis_user_ctx.set(request.state.user.current_user.username)  # username для формирования ключа Redis
+    return auth
 
 
 async def refresh_tokens(

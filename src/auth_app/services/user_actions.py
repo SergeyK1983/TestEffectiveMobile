@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import RowMapping
 
+from src.core.redis.cache_decorator import async_set_get_cache
 from src.auth_app.exceptions import UserHTTPException
 from src.auth_app.schemes.auth_schemes import AuthSchema
 from src.auth_app.schemes.user_schemes import UserWorkSchema, UserUpdateSchema
@@ -31,7 +32,8 @@ class AuthUserActions:
 
 class UserActionsService:
 
-    async def read_user(self, user: "CurrentUser") -> UserWorkSchema | None:
+    @async_set_get_cache(ttl=120, key="get_user")
+    async def read_user(self, user: "CurrentUser") -> UserWorkSchema:
         """
         Чтение данных пользователя
         Args:
@@ -39,11 +41,11 @@ class UserActionsService:
 
         Returns: UserWorkSchema data
         """
-        user_dict: dict | None = await user.get_user_data()
+        user_dict: RowMapping | None = await user.get_user_data()
         if user_dict is None:
             UserHTTPException.raise_http_404()
 
-        response = UserWorkSchema(**user_dict)
+        response = UserWorkSchema.model_validate(user_dict)
         return response
 
     async def update_user(self, user: "CurrentUser", update_data: UserUpdateSchema) -> UserWorkSchema:
@@ -70,7 +72,7 @@ class UserActionsService:
             user: instance of the class CurrentUser
         Returns:
         """
-        user_check: dict | None = await user.get_user_data()
+        user_check: RowMapping | None = await user.get_user_data()
         if user_check is None:
             UserHTTPException.raise_http_404()
 
