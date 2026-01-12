@@ -13,23 +13,20 @@ from src.auth_app.exceptions import UserHTTPException, AuthHTTPException
 
 
 class Authentication:
-    def __init__(self, request: Request, token: str, db: AsyncSession):
+    def __init__(self, request: Request, payload: dict, db: AsyncSession):
         self.request = request
-        self.token = token
+        self.payload = payload
         self.db = db
         self.request.state.user = None
 
     async def _authenticate(self) -> None:
         """
-        Устанавливает пользователя в Request.state или вызывает ошибку: HTTP_403_FORBIDDEN
+        Устанавливает пользователя в Request.state
         Returns:
             None
         """
-        payload = app_token.verify_access_token(self.token)
-        user_map = await UserRegisteredRepo.read_one_user_by_id(payload.get("uid"), self.db)
-
+        user_map = await UserRegisteredRepo.read_one_user_by_id(self.payload.get("uid"), self.db)
         user = UserWorkSchema(**user_map) if user_map else UserHTTPException.raise_http_404()
-
         self.request.state.user = CurrentUser(db_session=self.db, current_user=user)
         return None
 
@@ -53,7 +50,9 @@ async def authenticate(
     Returns:
         True if token is valid else raises exception
     """
-    auth: bool = await Authentication(request, header, db).is_authenticate()
+    payload = app_token.verify_access_token(header)
+    auth: bool = await Authentication(request, payload, db).is_authenticate()
+
     redis_user_ctx.set(request.state.user.current_user.username)  # username для формирования ключа Redis
     return auth
 
@@ -63,7 +62,9 @@ async def refresh_tokens(
 ) -> bool:
     """ Предназначено для обновления токенов. В заголовке использовать имя 'RefreshToken' """
 
-    return await Authentication(request, header, db).is_authenticate()
+    payload = app_token.verify_refresh_token(header)
+    request.state.token = header
+    return await Authentication(request, payload, db).is_authenticate()
 
 
 async def available_admin(request: Request) -> NoReturn:
