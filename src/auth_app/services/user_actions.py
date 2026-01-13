@@ -26,9 +26,10 @@ class AuthUserActions:
 
         access_token: str = app_token.get_access_token(user)
         refresh_token: str = app_token.get_refresh_token(user)
+        hash_refresh_token: str = app_token.hashing_token(refresh_token)
 
         rc = request.app.state.redis_client
-        await set_cache_refresh_token(cln=rc, username=user.username, token=refresh_token)
+        await set_cache_refresh_token(cln=rc, username=user.username, token=hash_refresh_token)
 
         return access_token, refresh_token
 
@@ -40,13 +41,14 @@ class AuthUserActions:
         rc = request.app.state.redis_client
 
         session_token: str = await get_cache_refresh_token(cln=rc, username=user.username)
-        if not session_token or (session_token != request.state.token):
+        if not session_token or not app_token.check_hash_token(session_token, request.state.token):
             AuthHTTPException.raise_http_403()
 
         access_token: str = app_token.get_access_token(user)
         refresh_token: str = app_token.get_refresh_token(user)
+        hash_refresh_token: str = app_token.hashing_token(refresh_token)
 
-        await set_cache_refresh_token(cln=rc, username=user.username, token=refresh_token)
+        await set_cache_refresh_token(cln=rc, username=user.username, token=hash_refresh_token)
 
         return access_token, refresh_token
 

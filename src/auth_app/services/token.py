@@ -7,8 +7,11 @@ import jwt
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import APIKeyHeader
+from argon2.exceptions import VerifyMismatchError, HashingError, VerificationError
 
+from src.core.logger import logger
 from src.auth_app.schemes.user_schemes import UserWorkSchema
+from src.auth_app.services.password import get_hasher
 from src.core.config import settings
 
 
@@ -74,13 +77,13 @@ class Token:
     @staticmethod
     def _decode_token(encoded: str):
         if not encoded.startswith("JWT "):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Ошибка аутентификации')
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ошибка аутентификации")
 
         encoded = encoded.replace("JWT ", "")
         try:
             payload = jwt.decode(encoded, settings.public_key, algorithms=[settings.ALGORITHM])
         except (jwt.ExpiredSignatureError, jwt.DecodeError):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Ошибка аутентификации')
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ошибка аутентификации")
         return payload
 
     def get_access_token(self, user: UserWorkSchema):
@@ -96,14 +99,29 @@ class Token:
     def verify_access_token(self, token: str) -> dict:
         payload = self._decode_token(token)
         if payload.get("type") != TypeToken.ACCESS.name:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Ошибка аутентификации')
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ошибка аутентификации")
         return payload
 
     def verify_refresh_token(self, token: str) -> dict:
         payload = self._decode_token(token)
         if payload.get("type") != TypeToken.REFRESH.name:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Ошибка аутентификации')
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ошибка аутентификации")
         return payload
+
+    def hashing_token(self, token: str) -> str:
+        try:
+            hash_token = get_hasher().hash(token)
+        except HashingError as exp:
+            logger.error("Хеширование не удалось: {}", exp.args[0])
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server error")
+        return hash_token
+
+    def check_hash_token(self, hash_token: str, token: str) -> bool:
+        try:
+            get_hasher().verify(hash_token, token)
+        except (VerifyMismatchError, VerificationError):
+            return False
+        return True
 
 
 app_token = Token()
