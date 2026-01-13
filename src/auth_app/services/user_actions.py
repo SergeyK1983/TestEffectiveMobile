@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import RowMapping
 
-from src.core.redis.cache_refresh_token import set_cache_refresh_token, get_cache_refresh_token
+from src.core.redis.cache_refresh_token import set_cache_refresh_token, get_cache_refresh_token, \
+    delete_cache_refresh_token
 from src.core.redis.cache_decorator import async_set_get_cache
 from src.auth_app.exceptions import UserHTTPException, AuthHTTPException
 from src.auth_app.schemes.auth_schemes import AuthSchema
@@ -33,8 +34,12 @@ class AuthUserActions:
 
         return access_token, refresh_token
 
-    async def logout_user(self, user: UserWorkSchema):
-        pass
+    async def logout_user(self, request: "Request") -> bool:
+        user = request.state.user.current_user
+        rc = request.app.state.redis_client
+
+        await delete_cache_refresh_token(cln=rc, username=user.username)
+        return True
 
     async def refresh_login(self, request: "Request") -> tuple[str, str]:
         user = request.state.user.current_user
