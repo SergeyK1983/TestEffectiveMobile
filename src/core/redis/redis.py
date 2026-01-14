@@ -1,4 +1,5 @@
 from enum import StrEnum
+from contextvars import ContextVar
 
 from redis.asyncio.client import Redis
 from redis.exceptions import ConnectionError, AuthenticationError, TimeoutError, ResponseError, RedisError
@@ -8,6 +9,9 @@ from src.core.config import settings
 
 
 APP_USER = "application"
+
+# текущий пользователь для ключа
+redis_user_ctx: ContextVar[str | None] = ContextVar("user_for_key_redis", default=None)
 
 
 class RedisUserScope(StrEnum):

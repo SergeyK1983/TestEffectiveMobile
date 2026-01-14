@@ -2,11 +2,10 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from fastapi import Request, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_async_db
 from src.auth_app.api import router
-from src.auth_app.exceptions import AuthHTTPException, UserHTTPException
+from src.auth_app.exceptions import AuthHTTPException
 from src.auth_app.schemes.user_schemes import UserWorkSchema, UserUpdateSchema
 from src.auth_app.services.auth import authenticate
 from src.auth_app.services.user_actions import UserActionsService
@@ -18,9 +17,9 @@ if TYPE_CHECKING:
 @router.delete(
     path="/remove_user/{user_id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(authenticate)]
+    dependencies=[Depends(authenticate), Depends(get_async_db)]
 )
-async def delete_user(request: Request, user_id: UUID, db: AsyncSession = Depends(get_async_db)):
+async def delete_user(request: Request, user_id: UUID):
     """
     Удаление пользователя из системы.
     Args:
@@ -42,15 +41,14 @@ async def delete_user(request: Request, user_id: UUID, db: AsyncSession = Depend
     path="/user_info/{user_id}",
     response_model=UserWorkSchema,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(authenticate)]
+    dependencies=[Depends(authenticate), Depends(get_async_db)]
 )
-async def get_user_data(request: Request, user_id: UUID, db: AsyncSession = Depends(get_async_db)):
+async def get_user_data(request: Request, user_id: UUID):
     """
     Получает основные данные пользователя
     Args:
         request: Request
         user_id: id of the user
-        db: session
     Returns:
         info of the user
     """
@@ -58,9 +56,7 @@ async def get_user_data(request: Request, user_id: UUID, db: AsyncSession = Depe
     if user.current_user.id != user_id:
         AuthHTTPException.raise_http_403()
 
-    user_data: UserWorkSchema | None = await user.get_user_data()
-    if user_data is None:
-        UserHTTPException.raise_http_404()
+    user_data: UserWorkSchema | dict = await UserActionsService().read_user(user)
     return user_data
 
 
@@ -68,11 +64,9 @@ async def get_user_data(request: Request, user_id: UUID, db: AsyncSession = Depe
     path="/update_user/{user_id}",
     response_model=UserWorkSchema,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(authenticate)]
+    dependencies=[Depends(authenticate), Depends(get_async_db)]
 )
-async def update_user_data(
-        request: Request, user_data: UserUpdateSchema, user_id: UUID, db: AsyncSession = Depends(get_async_db)
-):
+async def update_user_data(request: Request, user_data: UserUpdateSchema, user_id: UUID):
     """
     Обновляет данные пользователя, которые переданы в запросе.
     Args:
