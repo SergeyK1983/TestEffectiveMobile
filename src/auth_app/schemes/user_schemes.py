@@ -1,21 +1,26 @@
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, AfterValidator
+
+from src.auth_app.schemes.validators import validate_password, validate_username
+
+ValidPassword = Annotated[str, AfterValidator(validate_password)]
+ValidUsername = Annotated[str, AfterValidator(validate_username)]
 
 
 class UserSchema(BaseModel):
-    username: Annotated[str, Field(min_length=4, max_length=125, description="Имя пользователя в системе")]
+    username: Annotated[ValidUsername, Field(min_length=4, max_length=125, description="Имя пользователя в системе")]
     email: Annotated[EmailStr, Field(max_length=80, description="Электронная почта пользователя")]
 
 
 class UserRegisterSchema(UserSchema):
-    password: Annotated[str, Field(min_length=3, max_length=8, description="Пароль")]
+    password: Annotated[ValidPassword, Field(description="Пароль")]
 
 
 class ChangePasswordSchema(BaseModel):
     old_password: Annotated[str, Field(description="Старый пароль")]
-    new_password: Annotated[str, Field(description="Новый пароль")]
+    new_password: Annotated[ValidPassword, Field(description="Новый пароль")]
     repeat_password: Annotated[str, Field(description="Повтор пароль")]
 
 
