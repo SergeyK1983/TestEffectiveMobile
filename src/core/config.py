@@ -13,7 +13,7 @@ class Settings(BaseSettings, case_sensitive=True):
     # database
     DB_NAME: str = Field(alias="DB_NAME")
     DB_USER: str = Field(alias="DB_USER")
-    DB_PASS: str = Field(alias="DB_PASS")
+    DB_PASS_FILE: str = Field(alias="DB_PASS_FILE")
     DB_HOST: str = Field(alias="DB_HOST")
     DB_PORT: str = Field(alias="DB_PORT")
     ECHO: bool = Field(alias="ECHO")
@@ -39,13 +39,20 @@ class Settings(BaseSettings, case_sensitive=True):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
+    def _get_db_pass(self) -> str:
+        with open(BASE_DIR / self.DB_PASS_FILE, "r") as f:
+            password = f.read()
+        return password
+
     @property
     def postgresql_url(self) -> str:
-        return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        db_pass = self._get_db_pass()
+        return f"postgresql+psycopg2://{self.DB_USER}:{db_pass}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
     def async_postgresql_url(self) -> str:
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        db_pass = self._get_db_pass()
+        return f"postgresql+asyncpg://{self.DB_USER}:{db_pass}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
     def public_key(self):
