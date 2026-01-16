@@ -11,6 +11,7 @@ asyncpg = ">=0.31.0"
 black = "*"
 email-validator = "*"
 fastapi = ">=0.125"
+Jinja2 = ">=3.1.6"
 loguru = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
 psycopg2-binary = ">=2.9.11"
