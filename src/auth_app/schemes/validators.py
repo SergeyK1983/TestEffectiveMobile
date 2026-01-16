@@ -3,7 +3,14 @@ import re
 from src.auth_app.constants import LITERAL_PASSWORD, SPECIAL_LITERAL_PASSWORD
 
 
-def validate_username(username) -> bool:
+def validate_username(username: str) -> str:
+    """
+    Проверка имени пользователя при регистрации на соответствие разрешенным символам.
+    Args:
+        username: str - name of user
+    Return:
+        str - username of user or raise ValueError
+    """
     regex = r"^[\w]+$"
     p = re.compile(regex)
     if p.match(username):
@@ -11,14 +18,19 @@ def validate_username(username) -> bool:
     raise ValueError("Username может только содержать буквы латинского алфавита, цифры и _")
 
 
-def validate_password(psw: str):
+def validate_password(psw: str) -> str:
+    """
+    Проверка пароля пользователя при регистрации или изменении на соответствие разрешенным символам и сложности.
+    Args:
+        psw: str - password of user
+    Return:
+        str - password of user or raise ValueError
+    """
     errors = []
     if len(psw) < 8:
         errors.append("Пароль должен состоять минимум из 8 символов")
-    for literal in psw:
-        if literal not in LITERAL_PASSWORD + SPECIAL_LITERAL_PASSWORD:
-            errors.append("Допускаются только буквы латинского алфавита, цифры и символы ! @ # $ % ^ & * ( )")
-            break
+    if not all([p in LITERAL_PASSWORD + SPECIAL_LITERAL_PASSWORD for p in psw]):
+        errors.append("Допускаются только буквы латинского алфавита, цифры и символы ! @ # $ % ^ & * ( )")
     if not any([p.islower() for p in psw]):
         errors.append("Должен быть символ в нижнем регистре")
     if not any([p.isupper() for p in psw]):
