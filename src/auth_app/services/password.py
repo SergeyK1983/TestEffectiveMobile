@@ -44,7 +44,7 @@ class Password:
         try:
             get_hasher().verify(user_instance.password, user_input.password)
         except (VerifyMismatchError, VerificationError) as exp:
-            logger.info("Проверка пароля не удалась: {}", exp.args[0])
+            logger.info("Проверка пароля: {}", exp.args[0])
             AuthHTTPException.raise_http_401()
 
         await self._check_rehash_password(user_input.password, user_instance.password, user_instance.id, db)

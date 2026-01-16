@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, AfterValidator
+from pydantic import BaseModel, Field, EmailStr, AfterValidator
 
 from src.auth_app.schemes.validators import validate_password, validate_username
 
@@ -25,19 +25,14 @@ class ChangePasswordSchema(BaseModel):
 
 
 class UserUpdateSchema(BaseModel):
-    username: Annotated[str | None, Field(default=None, description="Пользователь")]
+    username: Annotated[
+        ValidUsername | None,
+        Field(default=None, min_length=4, max_length=125, description="Пользователь")
+    ]
     email: Annotated[EmailStr | None, Field(default=None, description="Электронная почта")]
     first_name: Annotated[str | None, Field(default=None, description="Имя пользователя")]
     second_name: Annotated[str | None, Field(default=None, description="Фамилия пользователя")]
     last_name: Annotated[str | None, Field(default=None, description="Отчество пользователя")]
-
-    @field_validator("username")
-    @classmethod
-    def username_not_empty(cls, value: str) -> str:
-        if value is not None:
-            if len(value) == 0:
-                raise ValueError("Поле не должно быть пустой строкой. Доступно значение None.")
-        return value
 
 
 class UserWorkSchema(BaseModel):
