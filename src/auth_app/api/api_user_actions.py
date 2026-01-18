@@ -73,7 +73,6 @@ async def update_user_data(request: Request, user_data: UserUpdateSchema, user_i
         request: Request
         user_id: id of the user
         user_data: data of the user to update
-        db: session
     Returns:
         info of the user
     """
