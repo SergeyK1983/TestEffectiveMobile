@@ -8,7 +8,7 @@ from src.auth_app.schemes.auth_schemes import AuthSchema
 from src.auth_app.services.user_actions import AuthUserActions
 
 
-@router.post(path="/login", status_code=status.HTTP_200_OK)
+@router.post(path="/login", status_code=status.HTTP_200_OK, name="sign_in")
 async def login_user(request: Request, response: Response, user: AuthSchema, db: AsyncSession = Depends(get_async_db)):
     """
     Аутентификация. Устанавливает заголовки "access_token" и "refresh_token" в ответе. Если пользователь не пройдет

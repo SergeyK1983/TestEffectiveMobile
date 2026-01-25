@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from src.auth_app.services.user import CurrentUser
 
 
-@router.post(path="/register", status_code=status.HTTP_201_CREATED)
+@router.post(path="/register", status_code=status.HTTP_201_CREATED, name="signup")
 async def register_user(user: UserRegisterSchema, db: AsyncSession = Depends(get_async_db)):
     """
     Регистрация пользователя в системе. Если пользователь уже существует, то будет поднято исключение.

@@ -1,9 +1,33 @@
 {% extends "base.html" %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', path='/auth_app/style/login_form.css') }}">
+{% endblock %}
+
+{% block header %}
+    <div class="header_container"></div>
+    <div class="header_container"></div>
+    <div class="header_container">
+        <div class="button_header" id="login-button">
+            Войти
+        </div>
+        <div class="button_header" id="register-button">
+            Регистрация
+        </div>
+    </div>
+{% endblock header %}
+
 
 {% block content %}
 <div>
-    <h1>Тут работа</h1>
+    <h1>Страница приветствия</h1>
 </div>
+{% endblock content %}
+
+{% block modals %}
+    {% include "auth_app/form_login.html" %}
 {% endblock %}
 
+{% block scripts %}
+    <script src="{{ url_for('static', path='/auth_app/js/login.js') }}"></script>
+{% endblock scripts %}

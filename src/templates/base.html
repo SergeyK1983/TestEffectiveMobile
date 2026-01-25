@@ -1,16 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en, ru">
 <head>
     <meta charset="UTF-8">
-    {% block head %}
+    <meta http-equiv="Content-Security-Policy"
+          content="
+              default-src 'self';
+              script-src 'self';
+              style-src 'self';
+              img-src 'self' data:;
+              font-src 'self';
+              object-src 'none';
+              base-uri 'none';
+              frame-ancestors 'none';
+              form-action 'self';
+          "
+    >
     <link rel="stylesheet" href="{{ url_for('static', path='/auth_app/style/style.css') }}" />
-    <title>{% block title %}{% endblock %} - TestAuth</title>
-    {% endblock %}
+
+    {% block styles %}{% endblock %}
+
+    <title>TestAuth - {% block title %}{% endblock title %}</title>
 </head>
 <body>
-    <div id="content">
-        {% block content %}
-        {% endblock %}
+<header>
+    <div class="base_header_container">
+        {% block header %}{% endblock header %}
     </div>
+</header>
+<main>
+    <div class="base_container">
+        {% block content %}
+        {% endblock content %}
+
+        {% block modals %}
+        {% endblock modals %}
+    </div>
+</main>
+
+{% block scripts %}{% endblock %}
+
+<footer>
+    <div class="base_footer_container">
+        <span>Карачаров Сергей, email: ssp-serg@yandex.ru</span>
+    </div>
+</footer>
 </body>
 </html>

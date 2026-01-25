@@ -1,0 +1,100 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    height: 8vh;  /*в процентах от экрана*/
+    width: 100%;
+}
+.base_header_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    height: 100%;
+    width: 70%;
+    background-color: lightgrey;
+}
+.header_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;              /* расстояние между кнопками */
+    height: 100%;
+    width: 20%;
+}
+.button_header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 65%;
+    min-width: 120px;
+    background-color: #6f8fcd;
+    border-radius: 6px;
+    cursor: pointer;  /* Палец вместо стрелки */
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.button_header:hover {
+    background-color: rgba(88, 174, 140, 0.43);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.button_header:active {
+    transform: translateY(0);
+    background-color: #3e5aa5;
+}
+.button_header > a {
+    text-decoration: none;        /* убираем подчёркивание */
+    color: black;
+    font-weight: 500;
+}
+
+
+main {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.base_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: stretch;
+    min-height: 84vh;
+    width: 70%;
+    background-color: rgba(39, 128, 115, 0.46);
+}
+
+
+footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100px;
+    width: 100%;
+}
+
+.base_footer_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    height: 100%;
+    width: 70%;
+    background-color: dimgrey;
+}
+.base_footer_container > span {
+    min-height: 100px;
+    display: inline-flex;
+    align-items: center;
+}
